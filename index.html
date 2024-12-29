@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adamant News Screener</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-image: url('https://example.com/gold-bars.jpg'); /* Replace with the actual URL of the background image */
+            background-size: cover;
+            background-position: center;
+            color: white;
+        }
+        .container {
+            text-align: center;
+            padding: 50px;
+            background-color: rgba(0, 0, 0, 0.7);
+            border-radius: 15px;
+            margin: 50px auto;
+            width: 80%;
+            max-width: 800px;
+        }
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+        input[type="text"] {
+            width: 70%;
+            padding: 10px;
+            font-size: 1em;
+            border: none;
+            border-radius: 5px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 1em;
+            background-color: #ffcc00;
+            border: none;
+            border-radius: 5px;
+            color: black;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        button:hover {
+            background-color: #e6b800;
+        }
+        #results {
+            margin-top: 20px;
+            text-align: left;
+        }
+        .article {
+            margin-bottom: 20px;
+            padding: 10px;
+            border-bottom: 1px solid #ccc;
+        }
+        .article a {
+            color: #ffcc00;
+            text-decoration: none;
+        }
+        .article a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Adamant News Screener</h1>
+        <p>Enter a symbol to find related news articles.</p>
+        <input type="text" id="symbol" placeholder="Enter symbol (e.g., TSLA, /ES, EURUSD)">
+        <button onclick="searchNews()">Search</button>
+        <div id="results"></div>
+    </div>
+
+    <script>
+        async function searchNews() {
+            const symbol = document.getElementById('symbol').value.trim();
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<p>Searching for news articles...</p>';
+
+            if (!symbol) {
+                resultsDiv.innerHTML = '<p>Please enter a valid symbol.</p>';
+                return;
+            }
+
+            try {
+                const responses = await Promise.all([
+                    fetch(`https://www.cnbc.com/world/`),
+                    fetch(`https://finance.yahoo.com/`),
+                    fetch(`https://www.marketwatch.com/`)
+                ]);
+
+                const articles = await Promise.all(responses.map(res => res.text()));
+
+                const regex = new RegExp(symbol, 'i');
+                const matchedArticles = [];
+
+                articles.forEach((html, index) => {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    const links = doc.querySelectorAll('a');
+
+                    links.forEach(link => {
+                        if (regex.test(link.textContent) || regex.test(link.href)) {
+                            matchedArticles.push({
+                                title: link.textContent.trim(),
+                                url: link.href,
+                                source: ['CNBC', 'Yahoo Finance', 'MarketWatch'][index]
+                            });
+                        }
+                    });
+                });
+
+                resultsDiv.innerHTML = '';
+                if (matchedArticles.length > 0) {
+                    matchedArticles.forEach(article => {
+                        const articleDiv = document.createElement('div');
+                        articleDiv.className = 'article';
+                        articleDiv.innerHTML = `<strong>${article.source}</strong>: <a href="${article.url}" target="_blank">${article.title}</a>`;
+                        resultsDiv.appendChild(articleDiv);
+                    });
+                } else {
+                    resultsDiv.innerHTML = '<p>No articles found for the given symbol.</p>';
+                }
+            } catch (error) {
+                console.error('Error fetching news articles:', error);
+                resultsDiv.innerHTML = '<p>An error occurred while searching for articles. Please try again later.</p>';
+            }
+        }
+    </script>
+</body>
+</html>
