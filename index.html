@@ -68,7 +68,7 @@
 <body>
     <div class="container">
         <h1>Adamant News Screener</h1>
-        <p>Enter a symbol to find related news articles.</p>
+        <p>Enter a symbol or keyword to find related news articles.</p>
         <input type="text" id="symbol" placeholder="Enter symbol (e.g., TSLA, /ES, EURUSD)">
         <button id="searchButton">Search</button>
         <div id="results"></div>
@@ -81,12 +81,13 @@
             resultsDiv.innerHTML = '<p>Searching for news articles...</p>';
 
             if (!symbol) {
-                resultsDiv.innerHTML = '<p>Please enter a valid symbol.</p>';
+                resultsDiv.innerHTML = '<p>Please enter a valid symbol or keyword.</p>';
                 return;
             }
 
             const apiKey = '71c41da34e3d490f85bf6e88b7590e69'; // NewsAPI Key
-            const url = `https://newsapi.org/v2/everything?q=${encodeURIComponent(symbol)}&apiKey=${apiKey}`;
+            // Use 'top-headlines' endpoint with a country (e.g., 'us') and keyword query
+            const url = `https://newsapi.org/v2/top-headlines?country=us&q=${encodeURIComponent(symbol)}&apiKey=${apiKey}`;
 
             try {
                 const response = await fetch(url);
@@ -103,7 +104,7 @@
                         resultsDiv.appendChild(articleDiv);
                     });
                 } else {
-                    resultsDiv.innerHTML = '<p>No articles found for the given symbol.</p>';
+                    resultsDiv.innerHTML = '<p>No articles found for the given symbol or keyword.</p>';
                 }
             } catch (error) {
                 console.error('Error fetching news articles:', error);
