@@ -70,7 +70,7 @@
         <h1>Adamant News Screener</h1>
         <p>Enter a symbol to find related news articles.</p>
         <input type="text" id="symbol" placeholder="Enter symbol (e.g., TSLA, /ES, EURUSD)">
-        <button onclick="searchNews()">Search</button>
+        <button id="searchButton">Search</button>
         <div id="results"></div>
     </div>
 
@@ -108,7 +108,12 @@
                 resultsDiv.innerHTML = '<p>An error occurred while searching for articles. Please try again later.</p>';
             }
         }
+
+        // Ensure the DOM is fully loaded before attaching the event listener
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchButton = document.getElementById('searchButton');
+            searchButton.addEventListener('click', searchNews);
+        });
     </script>
 </body>
 </html>
-
