@@ -85,40 +85,19 @@
                 return;
             }
 
+            const apiKey = 'YOUR_NEWS_API_KEY'; // Replace with your actual NewsAPI key
+            const url = `https://newsapi.org/v2/everything?q=${encodeURIComponent(symbol)}&apiKey=${apiKey}`;
+
             try {
-                const responses = await Promise.all([
-                    fetch(`https://www.cnbc.com/world/`),
-                    fetch(`https://finance.yahoo.com/`),
-                    fetch(`https://www.marketwatch.com/`)
-                ]);
+                const response = await fetch(url);
+                const data = await response.json();
 
-                const articles = await Promise.all(responses.map(res => res.text()));
-
-                const regex = new RegExp(symbol, 'i');
-                const matchedArticles = [];
-
-                articles.forEach((html, index) => {
-                    const parser = new DOMParser();
-                    const doc = parser.parseFromString(html, 'text/html');
-                    const links = doc.querySelectorAll('a');
-
-                    links.forEach(link => {
-                        if (regex.test(link.textContent) || regex.test(link.href)) {
-                            matchedArticles.push({
-                                title: link.textContent.trim(),
-                                url: link.href,
-                                source: ['CNBC', 'Yahoo Finance', 'MarketWatch'][index]
-                            });
-                        }
-                    });
-                });
-
-                resultsDiv.innerHTML = '';
-                if (matchedArticles.length > 0) {
-                    matchedArticles.forEach(article => {
+                if (data.status === "ok" && data.articles.length > 0) {
+                    resultsDiv.innerHTML = '';
+                    data.articles.forEach(article => {
                         const articleDiv = document.createElement('div');
                         articleDiv.className = 'article';
-                        articleDiv.innerHTML = `<strong>${article.source}</strong>: <a href="${article.url}" target="_blank">${article.title}</a>`;
+                        articleDiv.innerHTML = `<strong>${article.source.name}</strong>: <a href="${article.url}" target="_blank">${article.title}</a>`;
                         resultsDiv.appendChild(articleDiv);
                     });
                 } else {
@@ -132,3 +111,4 @@
     </script>
 </body>
 </html>
+
